@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="card" style="max-width:480px;">
+  <h2 style="margin:0 0 0.25rem;">{{ title }}</h2>
+  <p class="muted" style="margin:0 0 1.5rem;">Pick any date in the target month — it is stored as the 1st.</p>
+  <form method="post">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <div class="messages"><li class="error">{{ form.non_field_errors }}</li></div>
+    {% endif %}
+
+    <p>{{ form.category.label_tag }}{{ form.category }}
+      {% if form.category.errors %}<ul class="errorlist">{% for e in form.category.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </p>
+    <p>{{ form.currency.label_tag }}{{ form.currency }}
+      {% if form.currency.errors %}<ul class="errorlist">{% for e in form.currency.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </p>
+    <p>{{ form.month.label_tag }}{{ form.month }}
+      {% if form.month.errors %}<ul class="errorlist">{% for e in form.month.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </p>
+    <p>{{ form.amount.label_tag }}{{ form.amount }}
+      {% if form.amount.errors %}<ul class="errorlist">{% for e in form.amount.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </p>
+
+    <div class="form-actions">
+      <button class="btn" type="submit">Save</button>
+      <a class="btn secondary" href="{% url 'budget_list' %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

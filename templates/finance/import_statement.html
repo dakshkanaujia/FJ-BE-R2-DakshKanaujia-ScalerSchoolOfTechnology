@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Import statement{% endblock %}
+{% block content %}
+<h2>Import bank statement (CSV)</h2>
+
+<div class="card" style="max-width:620px;">
+  <p class="muted">
+    Upload a CSV with <code>date</code>, <code>description</code> and
+    <code>amount</code> columns (negative amount = expense). Separate
+    <code>debit</code>/<code>credit</code> columns are also supported.
+    Transactions are auto-categorised by keywords, and duplicates already in
+    your account are skipped automatically.
+  </p>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <p>
+      <label>Currency:
+        <select name="currency" required>
+          {% for c in currencies %}<option value="{{ c.id }}">{{ c.code }} — {{ c.name }}</option>{% endfor %}
+        </select>
+      </label>
+    </p>
+    <p><input type="file" name="file" accept=".csv" required></p>
+    <button class="btn" type="submit">Upload &amp; import</button>
+  </form>
+</div>
+
+{% if stats %}
+<div class="card">
+  <h3>Last import</h3>
+  <ul>
+    <li><strong>{{ stats.imported }}</strong> transactions imported</li>
+    <li><strong>{{ stats.duplicates }}</strong> duplicates skipped</li>
+    <li><strong>{{ stats.errors }}</strong> rows with errors</li>
+  </ul>
+  {% if stats.error_rows %}
+    <details>
+      <summary>Error details</summary>
+      <ul>{% for e in stats.error_rows %}<li class="muted">{{ e }}</li>{% endfor %}</ul>
+    </details>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

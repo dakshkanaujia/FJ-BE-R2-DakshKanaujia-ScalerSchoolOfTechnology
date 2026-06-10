@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="card" style="max-width:420px;">
+  <h2 style="margin:0 0 1.5rem;">{{ title }}</h2>
+  <form method="post">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <div class="messages"><li class="error">{{ form.non_field_errors }}</li></div>
+    {% endif %}
+
+    <p>{{ form.name.label_tag }}{{ form.name }}
+      {% if form.name.errors %}<ul class="errorlist">{% for e in form.name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </p>
+    <p>{{ form.type.label_tag }}{{ form.type }}
+      {% if form.type.errors %}<ul class="errorlist">{% for e in form.type.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </p>
+
+    <div class="form-actions">
+      <button class="btn" type="submit">Save</button>
+      <a class="btn secondary" href="{% url 'category_list' %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

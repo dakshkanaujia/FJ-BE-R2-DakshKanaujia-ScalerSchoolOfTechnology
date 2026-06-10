@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Report{% endblock %}
+{% block content %}
+<h2>Monthly Report — {{ year }}</h2>
+
+<form method="get" style="margin-bottom:1rem;">
+  <label>Year:
+    <select name="year" onchange="this.form.submit()">
+      {% for y in years %}
+        <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <noscript><button class="btn" type="submit">Go</button></noscript>
+  <a class="btn secondary" href="{% url 'report' %}?year={{ year }}&format=csv">Export CSV</a>
+</form>
+
+<div class="card">
+  <h3>Income vs Expense by month</h3>
+  <canvas id="reportChart" height="120"></canvas>
+  <table style="margin-top:1rem;">
+    <tr><th>Month</th><th>Income</th><th>Expense</th><th>Net</th></tr>
+    {% for m in monthly_series %}
+    <tr>
+      <td>{{ m.month }}</td>
+      <td class="pos">{{ m.income }}</td>
+      <td class="neg">{{ m.expense }}</td>
+      <td class="{% if m.net >= 0 %}pos{% else %}neg{% endif %}">{{ m.net }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  <p class="muted">Note: monthly bars sum amounts across all currencies. Use the
+    per-currency table below for currency-accurate figures.</p>
+</div>
+
+<div class="card">
+  <h3>Year totals by currency</h3>
+  {% if totals %}
+  <table>
+    <tr><th>Currency</th><th>Income</th><th>Expense</th><th>Net savings</th></tr>
+    {% for t in totals %}
+    <tr>
+      <td>{{ t.code }}</td>
+      <td class="pos">{{ t.symbol }}{{ t.income }}</td>
+      <td class="neg">{{ t.symbol }}{{ t.expense }}</td>
+      <td class="{% if t.net >= 0 %}pos{% else %}neg{% endif %}">{{ t.symbol }}{{ t.net }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}<p class="muted">No data for {{ year }}.</p>{% endif %}
+</div>
+{% endblock %}
+
+{% block head_extra %}<script src="https://cdn.jsdelivr.net/npm/chart.js@4" defer></script>{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const el = document.getElementById("reportChart");
+    if (!el) return;
+    new Chart(el, {
+      type: "line",
+      data: {
+        labels: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
+        datasets: [
+          { label: "Income", data: [{% for m in monthly_series %}{{ m.income }},{% endfor %}], borderColor: "#16a34a", fill: false },
+          { label: "Expense", data: [{% for m in monthly_series %}{{ m.expense }},{% endfor %}], borderColor: "#dc2626", fill: false },
+        ],
+      },
+      options: { responsive: true, scales: { y: { beginAtZero: true } } },
+    });
+  });
+</script>
+{% endblock %}

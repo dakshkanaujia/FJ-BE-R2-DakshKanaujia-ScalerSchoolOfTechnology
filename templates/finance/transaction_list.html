@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Transactions{% endblock %}
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:.5rem;">
+  <h2 style="margin:0;">Transactions</h2>
+  <a class="btn" href="{% url 'transaction_create' %}">+ Add transaction</a>
+</div>
+
+<div style="margin-bottom:1rem;display:flex;gap:.4rem;">
+  <a href="{% url 'transaction_list' %}"
+     class="btn btn-sm {% if not request.GET.type %}btn{% else %}secondary{% endif %}"
+     style="{% if not request.GET.type %}background:#1f2937;{% else %}background:#e5e7eb;color:#374151;{% endif %}">All</a>
+  <a href="?type=income"
+     class="btn btn-sm"
+     style="{% if request.GET.type == 'income' %}background:#166534;{% else %}background:#e5e7eb;color:#374151;{% endif %}">Income</a>
+  <a href="?type=expense"
+     class="btn btn-sm"
+     style="{% if request.GET.type == 'expense' %}background:#991b1b;{% else %}background:#e5e7eb;color:#374151;{% endif %}">Expense</a>
+</div>
+
+<div class="card" style="padding:0;overflow:hidden;">
+  {% if transactions %}
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th><th>Type</th><th>Category</th>
+        <th>Amount</th><th>Description</th><th>Receipt</th><th></th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for t in transactions %}
+    <tr>
+      <td style="color:#6b7280;font-size:.85rem;">{{ t.date }}</td>
+      <td>
+        <span class="badge {% if t.type == 'income' %}badge-income{% else %}badge-expense{% endif %}">
+          {{ t.get_type_display }}
+        </span>
+      </td>
+      <td>{{ t.category.name|default:"Uncategorised" }}</td>
+      <td class="{% if t.type == 'income' %}pos{% else %}neg{% endif %}">
+        {{ t.currency.symbol }}{{ t.amount }} {{ t.currency.code }}
+      </td>
+      <td>{{ t.description }}</td>
+      <td>
+        {% if t.receipt %}
+          <a href="{{ t.receipt.url }}" target="_blank" class="btn btn-sm secondary">view</a>
+        {% else %}
+          <span class="muted">—</span>
+        {% endif %}
+      </td>
+      <td style="white-space:nowrap;">
+        <a class="btn btn-sm secondary" href="{% url 'transaction_edit' t.pk %}">Edit</a>
+        <a class="btn btn-sm danger" href="{% url 'transaction_delete' t.pk %}">Delete</a>
+      </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted" style="padding:1.5rem;">No transactions found. <a href="{% url 'transaction_create' %}">Add your first one</a>.</p>
+  {% endif %}
+</div>
+{% endblock %}

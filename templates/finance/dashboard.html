@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h2>Dashboard</h2>
+
+<div class="card">
+  <h3>This month — totals by currency</h3>
+  {% if month_totals %}
+  <table>
+    <tr><th>Currency</th><th>Income</th><th>Expense</th><th>Net (savings)</th></tr>
+    {% for t in month_totals %}
+    <tr>
+      <td>{{ t.code }}</td>
+      <td class="pos">{{ t.symbol }}{{ t.income }}</td>
+      <td class="neg">{{ t.symbol }}{{ t.expense }}</td>
+      <td class="{% if t.net >= 0 %}pos{% else %}neg{% endif %}">{{ t.symbol }}{{ t.net }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}<p class="muted">No transactions this month yet.</p>{% endif %}
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h3>Expenses by category (this month)</h3>
+    {% if expense_breakdown %}
+      <canvas id="expenseChart" height="220"></canvas>
+    {% else %}<p class="muted">No expenses recorded this month.</p>{% endif %}
+  </div>
+  <div class="card">
+    <h3>Income vs Expense — {{ year }}</h3>
+    <canvas id="monthlyChart" height="220"></canvas>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Budget progress (this month)</h3>
+  {% if budget_progress %}
+  <table>
+    <tr><th>Category</th><th>Spent</th><th>Budget</th><th>Used</th></tr>
+    {% for p in budget_progress %}
+    <tr>
+      <td>{{ p.budget.category.name }}</td>
+      <td>{{ p.budget.currency.symbol }}{{ p.spent }}</td>
+      <td>{{ p.budget.currency.symbol }}{{ p.budget.amount }}</td>
+      <td class="{% if p.over %}neg{% else %}pos{% endif %}">{{ p.percent }}%{% if p.over %} ⚠ over{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}<p class="muted">No budgets set for this month. <a href="{% url 'budget_create' %}">Set one</a>.</p>{% endif %}
+</div>
+
+<div class="card">
+  <h3>Recent transactions</h3>
+  {% if recent %}
+  <table>
+    <tr><th>Date</th><th>Type</th><th>Category</th><th>Amount</th><th>Description</th></tr>
+    {% for t in recent %}
+    <tr>
+      <td>{{ t.date }}</td>
+      <td>{{ t.get_type_display }}</td>
+      <td>{{ t.category.name|default:"Uncategorised" }}</td>
+      <td class="{% if t.type == 'income' %}pos{% else %}neg{% endif %}">{{ t.currency.symbol }}{{ t.amount }} {{ t.currency.code }}</td>
+      <td>{{ t.description }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}<p class="muted">No transactions yet. <a href="{% url 'transaction_create' %}">Add one</a>.</p>{% endif %}
+</div>
+{% endblock %}
+
+{% block head_extra %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4" defer></script>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Render charts from server-provided data using Chart.js (CDN).
+  document.addEventListener("DOMContentLoaded", function () {
+    const expenseData = {
+      labels: [{% for e in expense_breakdown %}"{{ e.category|escapejs }}",{% endfor %}],
+      values: [{% for e in expense_breakdown %}{{ e.amount }},{% endfor %}],
+    };
+    const expenseEl = document.getElementById("expenseChart");
+    if (expenseEl && expenseData.values.length) {
+      new Chart(expenseEl, {
+        type: "doughnut",
+        data: { labels: expenseData.labels,
+                datasets: [{ data: expenseData.values }] },
+      });
+    }
+
+    const monthlyEl = document.getElementById("monthlyChart");
+    if (monthlyEl) {
+      new Chart(monthlyEl, {
+        type: "bar",
+        data: {
+          labels: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
+          datasets: [
+            { label: "Income", data: [{% for m in monthly_series %}{{ m.income }},{% endfor %}], backgroundColor: "#16a34a" },
+            { label: "Expense", data: [{% for m in monthly_series %}{{ m.expense }},{% endfor %}], backgroundColor: "#dc2626" },
+          ],
+        },
+        options: { responsive: true, scales: { y: { beginAtZero: true } } },
+      });
+    }
+  });
+</script>
+{% endblock %}

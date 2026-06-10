@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Budgets{% endblock %}
+{% block content %}
+<h2>Budgets — {{ month|date:"F Y" }}</h2>
+<p><a class="btn" href="{% url 'budget_create' %}">+ Set budget</a></p>
+<div class="card">
+  {% if progress %}
+  <table>
+    <tr><th>Category</th><th>Budget</th><th>Spent</th><th>Remaining</th><th>Used</th><th></th></tr>
+    {% for p in progress %}
+    <tr>
+      <td>{{ p.budget.category.name }}</td>
+      <td>{{ p.budget.currency.symbol }}{{ p.budget.amount }} {{ p.budget.currency.code }}</td>
+      <td>{{ p.budget.currency.symbol }}{{ p.spent }}</td>
+      <td class="{% if p.remaining < 0 %}neg{% else %}pos{% endif %}">{{ p.budget.currency.symbol }}{{ p.remaining }}</td>
+      <td class="{% if p.over %}neg{% else %}pos{% endif %}">{{ p.percent }}%{% if p.over %} ⚠{% endif %}</td>
+      <td><a href="{% url 'budget_delete' p.budget.pk %}">delete</a></td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}<p class="muted">No budgets set for this month.</p>{% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="card" style="max-width:560px;">
+  <h2 style="margin:0 0 0.25rem;">{{ title }}</h2>
+  <p class="muted" style="margin:0 0 1.5rem;">Tip: a negative amount records a refund.</p>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <div class="messages"><li class="error">{{ form.non_field_errors }}</li></div>
+    {% endif %}
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 1rem;">
+      <p>{{ form.type.label_tag }}{{ form.type }}
+        {% if form.type.errors %}<ul class="errorlist">{% for e in form.type.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </p>
+      <p>{{ form.category.label_tag }}{{ form.category }}
+        {% if form.category.errors %}<ul class="errorlist">{% for e in form.category.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </p>
+      <p>{{ form.amount.label_tag }}{{ form.amount }}
+        {% if form.amount.errors %}<ul class="errorlist">{% for e in form.amount.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </p>
+      <p>{{ form.currency.label_tag }}{{ form.currency }}
+        {% if form.currency.errors %}<ul class="errorlist">{% for e in form.currency.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </p>
+    </div>
+
+    <p>{{ form.date.label_tag }}{{ form.date }}
+      {% if form.date.errors %}<ul class="errorlist">{% for e in form.date.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </p>
+    <p>{{ form.description.label_tag }}{{ form.description }}
+      {% if form.description.errors %}<ul class="errorlist">{% for e in form.description.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </p>
+    <p>{{ form.receipt.label_tag }}{{ form.receipt }}
+      {% if form.receipt.errors %}<ul class="errorlist">{% for e in form.receipt.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </p>
+
+    <div class="form-actions">
+      <button class="btn" type="submit">Save</button>
+      <a class="btn secondary" href="{% url 'transaction_list' %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

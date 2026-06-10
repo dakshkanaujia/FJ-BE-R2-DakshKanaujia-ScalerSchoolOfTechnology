@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Register{% endblock %}
+{% block content %}
+<div class="card" style="max-width:480px;margin:0 auto;">
+  <h2>Create an account</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn" type="submit">Register</button>
+  </form>
+  {% if google_login_enabled %}
+    <p style="margin-top:1rem;">
+      <a class="btn secondary" href="{% url 'google_login' %}">Sign up with Google</a>
+    </p>
+  {% endif %}
+  <p class="muted" style="margin-top:1rem;">
+    Already have an account? <a href="{% url 'login' %}">Login here</a>.
+  </p>
+</div>
+{% endblock %}

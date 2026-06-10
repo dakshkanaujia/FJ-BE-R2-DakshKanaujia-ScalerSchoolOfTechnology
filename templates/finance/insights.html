@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Insights{% endblock %}
+
+{% block head_extra %}
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
+{% endblock %}
+
+{% block content %}
+<h2>Insights</h2>
+
+<div class="card">
+  <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:1rem;">
+    <h3 style="margin:0;">Financial advice</h3>
+    <span class="badge {% if insights.source == 'claude' %}badge-income{% else %}badge-expense{% endif %}">
+      {{ insights.source }}
+    </span>
+  </div>
+
+  {% if insights.source == "claude" %}
+    {{ insights.text|json_script:"insights-raw" }}
+    <div id="insights-md" style="line-height:1.7;"></div>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        var raw = JSON.parse(document.getElementById("insights-raw").textContent);
+        document.getElementById("insights-md").innerHTML = marked.parse(raw);
+      });
+    </script>
+  {% else %}
+    <p style="line-height:1.7;">{{ insights.text }}</p>
+    <p class="muted" style="margin-top:1rem;">Set <code>ANTHROPIC_API_KEY</code> to get AI-generated advice.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h3 style="margin:0 0 1rem;">Spending anomalies</h3>
+  {% if anomalies %}
+  <p class="muted" style="margin-bottom:.75rem;">Transactions far above the usual amount for their category.</p>
+  <table>
+    <thead><tr><th>Date</th><th>Category</th><th>Amount</th><th>Typical</th><th>Why flagged</th></tr></thead>
+    <tbody>
+    {% for a in anomalies %}
+    <tr>
+      <td>{{ a.transaction.date }}</td>
+      <td>{{ a.category }}</td>
+      <td class="neg">{{ a.amount }} {{ a.currency }}</td>
+      <td class="muted">~{{ a.mean }} {{ a.currency }}</td>
+      <td>{{ a.reason }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">No anomalies detected (need at least a few transactions per category).</p>
+  {% endif %}
+</div>
+{% endblock %}
