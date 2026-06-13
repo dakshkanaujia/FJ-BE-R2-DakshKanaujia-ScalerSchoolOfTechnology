@@ -1,0 +1,29 @@
+# Render Blueprint: a web service + managed PostgreSQL.
+# Create the services from this file via the Render dashboard ("New +" ->
+# "Blueprint") after connecting the GitHub repo.
+services:
+  - type: web
+    name: finance-tracker
+    runtime: python
+    plan: free
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn config.wsgi:application"
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: PYTHON_VERSION
+        value: "3.12.4"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: finance-tracker-db
+          property: connectionString
+      # Set these in the dashboard (secrets):
+      #   GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
+      #   EMAIL_BACKEND, EMAIL_HOST_PASSWORD (SendGrid API key)
+      #   OPENAI_API_KEY
+
+databases:
+  - name: finance-tracker-db
+    plan: free
